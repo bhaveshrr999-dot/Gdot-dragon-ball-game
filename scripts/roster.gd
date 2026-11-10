@@ -4,7 +4,7 @@ extends RefCounted
 const GOKU_FORMS = ["Base", "Kaioken", "Super Saiyan", "Super Saiyan 2", "Super Saiyan 3", "Super Saiyan God", "Super Saiyan Blue", "Blue Kaioken", "Ultra Instinct Sign", "Mastered Ultra Instinct", "True Ultra Instinct"]
 const VEGETA_FORMS = ["Base", "Super Saiyan", "Super Vegeta", "Super Saiyan 2", "Majin Vegeta", "Super Saiyan God", "Super Saiyan Blue", "Blue Evolution", "Ultra Ego"]
 const ARENAS = ["Rocky Wasteland", "World Tournament", "Planet Namek", "Destroyed Namek", "Time Chamber", "Destroyed City", "Alien Battlefield"]
-const MODES = ["Versus", "Training", "Story", "Survival", "Time Attack", "Local Battle"]
+const MODES = ["Versus", "Training", "Story", "Survival", "Time Attack", "Local Battle", "Tournament", "Arcade", "Boss Battle", "Combo Trials"]
 const DIFFICULTIES = ["Easy", "Normal", "Hard", "Legendary"]
 
 static func forms(warrior: int) -> Array:

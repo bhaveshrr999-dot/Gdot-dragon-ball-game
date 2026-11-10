@@ -9,15 +9,16 @@ var stick_finger: int = -1
 var stick_origin := Vector2(155, 556)
 var stick_point := Vector2.ZERO
 var edit_layout: bool = false
-var actions := {"guard": Vector2(1010, 507), "dash": Vector2(900, 578), "light": Vector2(1122, 514), "heavy": Vector2(1197, 581), "blast": Vector2(1092, 623), "special": Vector2(968, 654), "ultimate": Vector2(1170, 673), "transform": Vector2(850, 674), "charge": Vector2(780, 598), "up": Vector2(300, 540), "down": Vector2(300, 632)}
-var titles := {"guard":"GUARD", "dash":"VANISH", "light":"PUNCH", "heavy":"KICK", "blast":"KI", "special":"SPECIAL", "ultimate":"ULT", "transform":"FORM", "charge":"CHARGE", "up":"↑", "down":"↓"}
+var input_enabled: bool = true
+var actions := {"medium": Vector2(1197, 443), "guard": Vector2(1010, 507), "dash": Vector2(900, 578), "light": Vector2(1122, 514), "heavy": Vector2(1197, 581), "blast": Vector2(1092, 623), "special": Vector2(968, 654), "ultimate": Vector2(1170, 673), "transform": Vector2(850, 674), "charge": Vector2(780, 598), "up": Vector2(300, 540), "down": Vector2(300, 632)}
+var titles := {"medium":"MEDIUM", "guard":"GUARD", "dash":"VANISH", "light":"PUNCH", "heavy":"KICK", "blast":"KI", "special":"SPECIAL", "ultimate":"ULT", "transform":"FORM", "charge":"CHARGE", "up":"↑", "down":"↓"}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _input(event: InputEvent) -> void:
-	if not visible:
+	if not is_visible_in_tree() or (not input_enabled and not edit_layout):
 		return
 	if event is InputEventScreenTouch:
 		var point: Vector2 = event.position

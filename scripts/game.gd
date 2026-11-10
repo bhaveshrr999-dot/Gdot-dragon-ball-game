@@ -34,6 +34,12 @@ var effects: Array[Dictionary] = []
 var held: Dictionary = {}
 var running: bool = false
 var paused: bool = false
+var selector_open: bool = false
+var story_line: int = 0
+var story_lines: Array = []
+var training_defense: bool = false
+var story_finished: bool = false
+var dialogue_active: bool = false
 var mode: int = 0
 var difficulty: int = 1
 var wave: int = 1
@@ -146,6 +152,8 @@ func button(parent: Node, title: String, pos: Vector2, dimensions: Vector2, call
 	return node
 
 func panel(parent: Node, pos: Vector2, dimensions: Vector2, color: Color) -> ColorRect:
+	if parent == overlay:
+		overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	var node := ColorRect.new()
 	node.color = color
 	node.position = pos
@@ -161,12 +169,26 @@ func option(parent: Node, values: Array, pos: Vector2, width: float = 245) -> Op
 	for value in values:
 		node.add_item(str(value))
 	parent.add_child(node)
+	node.get_popup().about_to_popup.connect(func(): set_selector_open(true))
+	node.get_popup().popup_hide.connect(func(): set_selector_open(false))
+	node.get_popup().add_theme_constant_override("v_separation", 14)
 	return node
+
+func set_selector_open(value: bool) -> void:
+	selector_open = value
+	if not running:
+		return
+	touch.reset_input()
+	held.clear()
+	input_buffer.clear()
+	for fighter in [player, enemy]:
+		fighter.set_physics_process(not paused and not value)
+	touch.input_enabled = not paused and not value
 
 func build_menu() -> void:
 	panel(menu, Vector2.ZERO, Vector2(630, 720), Color(0.025, 0.045, 0.085, 0.94))
 	panel(menu, Vector2(42, 54), Vector2(48, 3), GOLD)
-	label(menu, "FAN-MADE  /  EARLY ACCESS 0.1", Vector2(103, 40), 15, GOLD)
+	label(menu, "FAN-MADE  /  EARLY ACCESS 0.2", Vector2(103, 40), 15, GOLD)
 	label(menu, "DRAGON BALL", Vector2(40, 75), 51)
 	label(menu, "ULTIMATE\nWARRIORS", Vector2(39, 129), 58, GOLD)
 	label(menu, "BREAK YOUR LIMITS", Vector2(44, 278), 19, Color("a6c5dc"))
@@ -190,7 +212,7 @@ func build_menu() -> void:
 	button(menu, "SETTINGS / CONTROLS", Vector2(322, 495), Vector2(265, 44), show_settings)
 	var start := button(menu, "ENTER THE ARENA     →", Vector2(44, 558), Vector2(543, 58), start_match)
 	start.add_theme_color_override("font_color", GOLD)
-	label(menu, "Original geometric character placeholders · synthesized audio", Vector2(44, 635), 13, Color("9bb0c4"))
+	label(menu, "Original skinned characters · development art", Vector2(44, 635), 13, Color("9bb0c4"))
 	label(menu, "Offline play  •  Touch + keyboard  •  No account required", Vector2(44, 660), 13, Color("9bb0c4"))
 	label(menu, "GOKU  ×  VEGETA", Vector2(822, 593), 27, GOLD)
 	label(menu, "A rivalry beyond limits.", Vector2(841, 635), 18)
@@ -222,6 +244,11 @@ func build_hud() -> void:
 	form_label = label(hud, "", Vector2(30, 98), 15, GOLD)
 	combo_label = label(hud, "", Vector2(30, 185), 28, GOLD)
 	message_label = label(hud, "", Vector2(345, 205), 26, GOLD)
+	button(hud, "RESET", Vector2(990, 102), Vector2(100, 42), training_reset)
+	button(hud, "DUMMY", Vector2(1100, 102), Vector2(110, 42), func():
+		if mode in [1, 9]:
+			training_defense = not training_defense
+			notify("Dummy: guard" if training_defense else "Dummy: idle", 1.5))
 	button(hud, "Ⅱ", Vector2(1228, 101), Vector2(44, 42), toggle_pause)
 	battle_form = option(hud, [], Vector2(390, 102), 225)
 	battle_attack = option(hud, [], Vector2(635, 102), 325)
@@ -238,6 +265,8 @@ func build_hud() -> void:
 	touch.action_released.connect(release_action)
 
 func clear_world() -> void:
+	dialogue_active = false
+	selector_open = false
 	for child in world.get_children():
 		world.remove_child(child)
 		child.queue_free()
@@ -309,9 +338,16 @@ func start_match() -> void:
 	time_left = 90 if mode == 4 else 180
 	elapsed = 0
 	ai_clock = 1.5
-	notify("FIGHT!" if mode != 2 else "FAN STORY: Rivalry at dawn", 2.5)
+	if mode == 8:
+		enemy.form_index = Roster.forms(enemy.warrior).size() - 1
+		enemy.refresh_form()
+		difficulty = 3
+	notify("FIGHT!", 2.5)
+	if mode == 2:
+		begin_story_chapter()
 
 func _process(delta: float) -> void:
+	touch.input_enabled = running and not paused and not selector_open and overlay.get_child_count() == 0
 	if not is_instance_valid(player):
 		return
 	if not running:
@@ -319,7 +355,7 @@ func _process(delta: float) -> void:
 		camera.position = Vector3(0.6 + sin(menu_orbit) * 0.7, 3.0, 10)
 		camera.look_at(Vector3(1.0, 1.8, -1), Vector3.UP)
 		return
-	if paused:
+	if paused or selector_open:
 		return
 	elapsed += delta
 	time_left -= delta
@@ -336,7 +372,9 @@ func _process(delta: float) -> void:
 			process_ai(delta)
 	update_camera(delta)
 	update_hud()
-	if mode == 1:
+	if mode in [1, 9]:
+		if mode == 9 and player.combo >= 3:
+			end_match("TRIAL COMPLETE", "Three-hit chain connected. Try a launch into a beam next.")
 		if enemy.health <= 0:
 			enemy.health = 200
 			for fighter in [player, enemy]:
@@ -347,10 +385,13 @@ func _process(delta: float) -> void:
 		if player.health <= 0:
 			end_match("DEFEAT", "Train, adapt, and return stronger.")
 		elif enemy.health <= 0:
-			if mode in [2, 3] and (mode == 3 or wave < 3):
+			if mode in [2, 3, 6, 7] and (mode == 3 or wave < (5 if mode == 7 else 3)):
 				next_wave()
 			else:
-				end_match("VICTORY", "Fan story completed." if mode == 2 else "You broke through your limits.")
+				if mode == 2:
+					begin_story_ending()
+				else:
+					end_match("VICTORY", "You broke through your limits.")
 		elif time_left <= 0:
 			end_match("TIME UP", "Player wins on health." if player.health > enemy.health else "Rival wins on health.")
 
@@ -387,9 +428,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event.pressed and event.physical_keycode == KEY_ESCAPE and running:
 		toggle_pause()
 		return
-	if not running or paused:
+	if not running or paused or selector_open:
 		return
-	var mapping := {KEY_J:"light", KEY_K:"heavy", KEY_L:"blast", KEY_SPACE:"dash", KEY_E:"special", KEY_R:"ultimate", KEY_T:"transform", KEY_G:"grapple", KEY_ENTER:"clash"}
+	var mapping := {KEY_H:"medium", KEY_J:"light", KEY_K:"heavy", KEY_L:"blast", KEY_SPACE:"dash", KEY_E:"special", KEY_R:"ultimate", KEY_T:"transform", KEY_G:"grapple", KEY_ENTER:"clash"}
 	if mapping.has(event.physical_keycode) and event.pressed:
 		press_action(mapping[event.physical_keycode])
 	if mode == 5 and event.pressed:
@@ -400,7 +441,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			KEY_KP_4: enemy.vanish()
 
 func press_action(action: String) -> void:
-	if not running or paused:
+	if not running or paused or selector_open:
 		return
 	held[action] = true
 	if clash_time > 0:
@@ -420,6 +461,7 @@ func release_action(action: String) -> void:
 
 func execute_action(action: String) -> void:
 	match action:
+		"medium": player.medium_attack()
 		"light", "heavy", "grapple":
 			if player.melee(action == "heavy", action == "grapple"):
 				sound.play("dash")
@@ -443,7 +485,8 @@ func execute_action(action: String) -> void:
 				sound.play("dash")
 
 func process_ai(delta: float) -> void:
-	if mode == 1:
+	if mode in [1, 9]:
+		enemy.guarding = training_defense
 		return
 	var dist: float = player.position.distance_to(enemy.position)
 	var skill: float = [0.55, 1.0, 1.4, 1.9][difficulty]
@@ -509,6 +552,9 @@ func launch_attack(actor: Fighter, attack: AttackDefinition) -> void:
 		visual.look_at(visual.position + direction, Vector3.UP if absf(direction.y) < 0.99 else Vector3.RIGHT)
 	else:
 		Art.ball(visual, Vector3.ZERO, radius, attack.color, 2)
+	var trail := EnergyFX.particles(visual, attack.color, radius * 0.5, 16 if attack.kind == "blast" else 32)
+	trail.direction = -direction
+	trail.gravity = Vector3.ZERO
 	projectiles.append({"node": visual, "actor": actor, "target": target, "attack": attack, "direction": direction, "ttl": 4.0, "radius": radius})
 	sound.play("blast" if attack.kind == "blast" else "beam")
 	if attack.damage > 30:
@@ -681,9 +727,12 @@ func next_wave() -> void:
 	time_left = 180
 	for shot in projectiles.duplicate():
 		remove_shot(shot)
-	notify("WAVE %d  ·  %s" % [wave, "Fan story: Beyond the limits" if mode == 2 else "Survival"], 2.5)
+	notify("WAVE %d" % wave, 2.5)
+	if mode == 2:
+		begin_story_chapter()
 
 func clear_overlay() -> void:
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for child in overlay.get_children():
 		overlay.remove_child(child)
 		child.queue_free()
@@ -704,7 +753,7 @@ func end_match(title: String, subtitle: String) -> void:
 	button(overlay, "MAIN MENU", Vector2(625, 417), Vector2(235, 54), show_menu)
 
 func toggle_pause() -> void:
-	if not running:
+	if not running or dialogue_active:
 		return
 	paused = not paused
 	for fighter in [player, enemy]:
@@ -720,6 +769,8 @@ func toggle_pause() -> void:
 		button(overlay, "MAIN MENU", Vector2(440, 423), Vector2(400, 52), show_menu)
 
 func show_settings() -> void:
+	if running and not paused:
+		toggle_pause()
 	clear_overlay()
 	panel(overlay, Vector2(300, 100), Vector2(680, 535), Color(0.025, 0.04, 0.08, 0.99))
 	label(overlay, "SETTINGS", Vector2(345, 120), 37, GOLD)
@@ -786,3 +837,85 @@ func save_settings() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and running and not paused:
 		toggle_pause()
+
+func begin_story_chapter() -> void:
+	dialogue_active = true
+	story_finished = false
+	var chapters := [
+		["RIVALRY AT DAWN", "Bulma: The simulator is ready. Keep your power down until calibration ends.", "Goku: A quick warm-up? Come on, Vegeta!", "Vegeta: Try paying attention. We are measuring control, not noise."],
+		["THE RESONANCE", "Bulma: Your last exchange fed energy back into the system. It is repeating your attacks!", "Vegeta: Then stop giving it the same answer, Kakarot.", "Goku: Right. We change our timing and make an opening together."],
+		["BEYOND THE LIMITS", "Bulma: One concentrated burst will break the feedback loop. The echo will resist.", "Goku: I'll draw it out. Vegeta, match my timing!", "Vegeta: Keep up with me. We finish this in one exchange."]
+	]
+	story_lines = chapters[wave - 1].duplicate()
+	story_line = 0
+	paused = true
+	for fighter in [player, enemy]:
+		fighter.set_physics_process(false)
+	touch.reset_input()
+	held.clear()
+	show_story_line()
+
+func begin_story_ending() -> void:
+	dialogue_active = true
+	story_finished = true
+	story_lines = ["A RIVALRY CONTINUES", "Bulma: Feedback is gone. Next time, wait for the calibration light!", "Goku: That was great! Same time tomorrow?", "Vegeta: Tomorrow, we train without your machine.", "Campaign complete. Your training record has been saved."]
+	story_line = 0
+	paused = true
+	for fighter in [player, enemy]:
+		fighter.set_physics_process(false)
+	var progress := ConfigFile.new()
+	progress.load("user://campaign.cfg")
+	progress.set_value("campaign", "completed", true)
+	progress.set_value("campaign", "chapters", 3)
+	progress.save("user://campaign.cfg")
+	show_story_line()
+
+func show_story_line() -> void:
+	clear_overlay()
+	var speaker: Fighter = player if story_line % 2 == 0 else enemy
+	camera.position = speaker.position - speaker.basis.z * 5 + Vector3.UP * 2.7
+	camera.look_at(speaker.position + Vector3.UP * 1.8)
+	panel(overlay, Vector2.ZERO, Vector2(1280, 720), Color(0.01, 0.025, 0.05, 0.6))
+	label(overlay, "ORIGINAL FAN STORY  /  CHAPTER %d" % wave, Vector2(100, 130), 18, GOLD)
+	label(overlay, story_lines[0], Vector2(100, 190), 40, GOLD)
+	var dialogue := label(overlay, story_lines[story_line] if story_line > 0 else "A training rivalry. A dangerous feedback loop. One chance to work together.", Vector2(100, 310), 26)
+	dialogue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dialogue.size = Vector2(1060, 180)
+	button(overlay, "CONTINUE →", Vector2(900, 570), Vector2(280, 65), advance_story)
+
+func advance_story() -> void:
+	story_line += 1
+	if story_line < story_lines.size():
+		show_story_line()
+		return
+	dialogue_active = false
+	clear_overlay()
+	paused = false
+	for fighter in [player, enemy]:
+		fighter.set_physics_process(true)
+	if story_finished:
+		end_match("CAMPAIGN COMPLETE", "The simulator is safe. The rivalry continues.")
+	else:
+		var progress := ConfigFile.new()
+		progress.load("user://campaign.cfg")
+		progress.set_value("campaign", "chapters", maxi(wave - 1, int(progress.get_value("campaign", "chapters", 0))))
+		progress.save("user://campaign.cfg")
+		notify("CHAPTER %d: FIGHT!" % wave, 2)
+
+func training_reset() -> void:
+	if not running or mode not in [1, 9] or paused or selector_open:
+		return
+	for fighter in [player, enemy]:
+		fighter.health = 200
+		fighter.ki = 100
+		fighter.stamina = 100
+		fighter.pending = null
+		fighter.combo = 0
+		fighter.stunned = 0
+		fighter.cooldown = 0
+		fighter.motion = Vector3.ZERO
+	player.position = Vector3(0, 0, 3)
+	enemy.position = Vector3(0, 0, -1)
+	for shot in projectiles.duplicate():
+		remove_shot(shot)
+	notify("Training reset · chain punch, medium, kick", 2)

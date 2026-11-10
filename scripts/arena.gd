@@ -1,7 +1,7 @@
 class_name BattleArena
 extends Node3D
 
-var breakables: Array[MeshInstance3D] = []
+var breakables: Array[Node3D] = []
 var rng := RandomNumberGenerator.new()
 var palette: Color
 var craters: Array[Node3D] = []
@@ -25,14 +25,18 @@ func generate(index: int) -> void:
 			var angle := rng.randf() * TAU
 			var distance := rng.randf_range(12, 47)
 			var pos := Vector3(cos(angle) * distance, 0, sin(angle) * distance)
-			var rock: MeshInstance3D
+			var rock: Node3D
 			if index == 5:
 				var height := rng.randf_range(4, 17)
 				rock = Art.box(self, pos + Vector3(0, height / 2, 0), Vector3(3.3, height, 3.3), palette.darkened(rng.randf() * 0.25))
 				for y in int(height / 2):
 					Art.box(rock, Vector3(0, y * 1.6 - height / 2 + 1, -1.66), Vector3(2.3, 0.45, 0.02), Color("94c3d8"))
 			else:
-				rock = Art.spike(self, pos + Vector3(0, 1.8, 0), rng.randf_range(3, 10), palette.darkened(rng.randf() * 0.3), Vector3(0, rng.randf() * 360, 0))
+				rock = preload("res://assets/models/wasteland_rock.glb").instantiate()
+				add_child(rock)
+				rock.position = pos
+				rock.scale = Vector3.ONE * rng.randf_range(1.2, 3.5)
+				rock.rotation.y = rng.randf() * TAU
 				rock.scale.x = rng.randf_range(0.7, 2.0)
 			breakables.append(rock)
 		if index == 2:

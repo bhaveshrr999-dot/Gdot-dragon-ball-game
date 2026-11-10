@@ -12,6 +12,9 @@ func run() -> void:
 	game.start_match()
 	await create_timer(2.0).timeout
 	root.get_texture().get_image().save_png("/tmp/warriors-battle.png")
+	game.player.transform(2)
+	await create_timer(1.5).timeout
+	root.get_texture().get_image().save_png("/tmp/warriors-aura.png")
 	print("Rendered menu and gameplay. Desktop FPS: ", Engine.get_frames_per_second())
 	game.queue_free()
 	await create_timer(0.2).timeout

@@ -25,7 +25,9 @@ var windup: float = 0.0
 var transform_time: float = 0.0
 var animation_time: float = 0.0
 var attack_pose: float = 0.0
+var kick_pose: float = 0.0
 var active: bool = false
+var aura_particles: CPUParticles3D
 var aura: MeshInstance3D
 var model: Node3D
 var hair_root: Node3D
@@ -34,6 +36,11 @@ var right_arm: Node3D
 var left_leg: Node3D
 var right_leg: Node3D
 var animation_player: AnimationPlayer
+var rigged_model: Node3D
+var rig_animation: AnimationPlayer
+var animation_tree: AnimationTree
+var rig_playback: AnimationNodeStateMachinePlayback
+var rig_state: String = ""
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -98,6 +105,7 @@ func build_model() -> void:
 	library.add_animation("breathing", idle)
 	animation_player.add_animation_library("", library)
 	animation_player.play("breathing")
+	install_rig()
 
 func refresh_form() -> void:
 	for child in hair_root.get_children():
@@ -115,6 +123,8 @@ func refresh_form() -> void:
 	if Roster.forms(warrior)[form_index] == "Super Saiyan 3":
 		for i in 6:
 			Art.spike(hair_root, Vector3(0, 2.4 - i * 0.18, 0.35 + i * 0.07), 1.0, color, Vector3(35, i * 50, 20))
+	if is_instance_valid(aura_particles):
+		aura_particles.queue_free()
 	if is_instance_valid(aura):
 		aura.queue_free()
 	var aura_color: Color = info.aura
@@ -122,6 +132,11 @@ func refresh_form() -> void:
 	aura = Art.ball(self, Vector3(0, 1.65, 0), 1.0, aura_color, 0.7)
 	aura.scale = Vector3(0.95, 1.95, 0.85)
 	aura.visible = form_index > 0
+	aura.material_override = EnergyFX.aura_material(info.aura)
+	aura_particles = EnergyFX.particles(self, info.aura, 0.65, 32)
+	aura_particles.position.y = 0.6
+	aura_particles.emitting = form_index > 0
+	update_rig_hair()
 
 func _physics_process(delta: float) -> void:
 	animation_time += delta
@@ -134,6 +149,7 @@ func _physics_process(delta: float) -> void:
 	if not active:
 		return
 	if health <= 0:
+		play_rig("defeat")
 		model.rotation.z = lerpf(model.rotation.z, PI / 2, delta * 5)
 		return
 	guard_age = guard_age + delta if guarding else 0.0
@@ -165,10 +181,13 @@ func _physics_process(delta: float) -> void:
 	animate(delta)
 
 func animate(delta: float) -> void:
+	update_rig_animation()
 	var moving := Vector2(motion.x, motion.z).length() > 0.3
 	var stride: float = sin(animation_time * 13) * 0.65 if moving and position.y < 0.2 else 0.0
 	left_leg.rotation.x = lerpf(left_leg.rotation.x, stride, delta * 15)
 	right_leg.rotation.x = lerpf(right_leg.rotation.x, -stride, delta * 15)
+	kick_pose = maxf(0, kick_pose - delta * 4)
+	right_leg.rotation.x -= kick_pose * 1.4
 	attack_pose = maxf(0, attack_pose - delta * 5)
 	var pose: float = -1.6 * attack_pose
 	if pending != null or charging or transform_time > 0:
@@ -179,6 +198,8 @@ func animate(delta: float) -> void:
 	right_arm.rotation.x = lerpf(right_arm.rotation.x, pose + stride * 0.4, delta * 18)
 	model.rotation.x = lerpf(model.rotation.x, -0.18 if moving else 0.0, delta * 5)
 	aura.visible = form_index > 0 or charging or pending != null or transform_time > 0
+	aura_particles.emitting = aura.visible
+	aura.material_override.set_shader_parameter("intensity", 1.8 if charging or transform_time > 0 else 1.0)
 	aura.rotation.y += delta * 2
 	aura.scale.z = 0.8 + sin(animation_time * 11) * 0.08
 
@@ -194,16 +215,18 @@ func move_input(direction: Vector3, delta: float) -> void:
 	motion += direction.limit_length() * speed * delta * 16
 	motion = motion.limit_length(speed)
 
-func melee(heavy: bool = false, grapple: bool = false) -> bool:
+func melee(heavy: bool = false, grapple: bool = false, strength: float = 1.0) -> bool:
 	if not can_act() or not is_instance_valid(target):
 		return false
 	cooldown = 0.52 if heavy else 0.28
+	if heavy:
+		kick_pose = 1.0
 	attack_pose = 1.0
 	charging = false
 	if position.distance_to(target.position) < 3.4:
 		combo += 1
 		combo_time = 1.5
-		var damage: float = (12.0 if heavy else 5.0) * Roster.form(warrior, form_index).power
+		var damage: float = (12.0 if heavy else 5.0) * strength * Roster.form(warrior, form_index).power
 		var knock := (target.position - position).normalized() * (18 if heavy else 4)
 		if heavy:
 			knock.y = 7
@@ -274,3 +297,80 @@ func vanish() -> bool:
 	invincible = 0.45
 	cooldown = 0.2
 	return true
+
+func medium_attack() -> bool:
+	if not can_act():
+		return false
+	var accepted := melee(false, false, 1.6)
+	if accepted:
+		cooldown = 0.38
+		kick_pose = 0.6
+	return accepted
+
+func install_rig() -> void:
+	var scene: PackedScene = load("res://assets/models/goku.glb" if warrior == 0 else "res://assets/models/vegeta.glb")
+	for child in model.get_children():
+		if child is Node3D:
+			child.visible = false
+	rigged_model = scene.instantiate()
+	model.add_child(rigged_model)
+	var players := rigged_model.find_children("*", "AnimationPlayer", true, false)
+	if players.is_empty():
+		return
+	rig_animation = players[0]
+	animation_tree = AnimationTree.new()
+	rigged_model.add_child(animation_tree)
+	animation_tree.anim_player = animation_tree.get_path_to(rig_animation)
+	var machine := AnimationNodeStateMachine.new()
+	var states: Array[String] = []
+	for clip in rig_animation.get_animation_list():
+		if clip == "RESET":
+			continue
+		var state: String = clip.get_file()
+		if state in ["idle", "run", "flight", "guard", "charge"]:
+			rig_animation.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
+		var node := AnimationNodeAnimation.new()
+		node.animation = clip
+		machine.add_node(state, node)
+		states.append(state)
+	for source in states:
+		for target_state in states:
+			if source != target_state:
+				var transition := AnimationNodeStateMachineTransition.new()
+				transition.xfade_time = 0.12
+				machine.add_transition(source, target_state, transition)
+	animation_tree.tree_root = machine
+	animation_tree.active = true
+	rig_playback = animation_tree.get("parameters/playback")
+	if machine.has_node("idle"):
+		rig_playback.start("idle")
+	rig_state = "idle"
+	update_rig_hair()
+
+func update_rig_hair() -> void:
+	if not is_instance_valid(rigged_model):
+		return
+	for mesh in rigged_model.find_children("*", "MeshInstance3D", true, false):
+		for surface in mesh.mesh.get_surface_count():
+			var mat: Material = mesh.mesh.surface_get_material(surface)
+			if mat is StandardMaterial3D and mat.resource_name.begins_with("Hair"):
+				var changed: StandardMaterial3D = mat.duplicate()
+				changed.albedo_color = Roster.form(warrior, form_index).hair
+				mesh.set_surface_override_material(surface, changed)
+
+func play_rig(state: String) -> void:
+	if rig_playback != null and state != rig_state and animation_tree.tree_root.has_node(state):
+		rig_playback.travel(state)
+		rig_state = state
+
+func update_rig_animation() -> void:
+	var state := "idle"
+	if motion.length() > 0.5:
+		state = "run" if position.y < 0.2 else "flight"
+	if charging: state = "charge"
+	if guarding: state = "guard"
+	if attack_pose > 0: state = "kick" if kick_pose > 0 else "punch"
+	if pending != null: state = "beam"
+	if stunned > 0: state = "hit"
+	if transform_time > 0: state = "transform"
+	play_rig(state)

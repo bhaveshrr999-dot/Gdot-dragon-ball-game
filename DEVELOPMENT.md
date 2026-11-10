@@ -2,7 +2,15 @@
 
 # Ultimate Warriors — development roadmap
 
-## Status: 0.1.0 development prerelease
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:9782a3ec9c34e44af5eeee1f94014546fec4c548eb438b883b8cbceb97b0e1fe -->
+
+## Historical baseline: 0.1.0
+
+See [UPDATE_0_2.md](UPDATE_0_2.md) for the subsequent menu repair, Blender assets, animation blending, VFX, story and mode expansion. The sections below record the original baseline and its remaining objectives.
+
+<!-- /coderabbit-ai-generated:v1 -->
 
 This is the first playable implementation, not the finished game described in the master prompt. The repository began with only [the lore README](readme.md). Consult that reference for technique descriptions and continuity, and use this checklist to avoid confusing implemented systems with finished content. The user raised the source asset ceiling to 1.5 GB; never pad assets to fill it.
 

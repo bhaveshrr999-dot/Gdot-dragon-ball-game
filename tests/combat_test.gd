@@ -43,6 +43,8 @@ func run() -> void:
 		game.form_select.select(0)
 		game.start_match()
 		var fighter: Fighter = game.player
+		check(fighter.rig_animation != null and fighter.rig_animation.has_animation("run"), "imported skeletal run animation")
+		check(fighter.animation_tree.active, "animation blend state machine active")
 		for index in Roster.forms(warrior).size():
 			reset_actor(fighter)
 			if index > 0:
@@ -137,7 +139,7 @@ func run() -> void:
 	check(game.held.get("guard", false) and game.touch.movement.x > 0.1, "multitouch supports move and guard")
 	game.touch.reset_input()
 	check(game.touch.movement == Vector2.ZERO and not game.held.has("guard"), "touch reset releases held controls")
-	for index in 6:
+	for index in Roster.MODES.size():
 		game.mode_select.select(index)
 		game.start_match()
 		check(game.mode == index and game.running, "mode launches %d" % index)

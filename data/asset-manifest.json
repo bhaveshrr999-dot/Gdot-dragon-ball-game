@@ -70,18 +70,18 @@
       "path": "scripts/fighter.gd",
       "source": "Original project code",
       "license": "MIT (code); character designs belong to their respective rights holders",
-      "bytes": 9850,
+      "bytes": 13499,
       "usage": "Original geometric Goku/Vegeta stand-ins, generated at runtime; placeholder models, not commercial game assets",
-      "sha256": "8b206711ace6642e19cfa977ef7faa555dc898f75643d7dddcab0998eee17031"
+      "sha256": "715d10025c3eaae082a5a78a30afe01a8c264086c0a8fe8d3ac4a4111159f684"
     },
     {
       "name": "arena",
       "path": "scripts/arena.gd",
       "source": "Original project code",
       "license": "MIT (code); character designs belong to their respective rights holders",
-      "bytes": 3046,
+      "bytes": 3098,
       "usage": "Original arena geometry; generated at runtime",
-      "sha256": "7afc8d0c1c4760bbf9075ae3f4731f0d7f551c23a331e4f9cd3fe0e1b11932ef"
+      "sha256": "406780171ebe14813407a593f768eb9dbc419beb168e451e429187aa40b8cf3e"
     },
     {
       "name": "art",
@@ -98,9 +98,68 @@
       "source": "Original vector artwork for this project",
       "license": "MIT",
       "bytes": 352,
-      "usage": "Application icon"
+      "usage": "Application icon",
+      "sha256": "3af04c43d2f47c48d100c8f4104c5bebd505f213c001212445aae3ebe7b4a4e9"
+    },
+    {
+      "name": "wasteland_rock",
+      "path": "assets/models/wasteland_rock.glb",
+      "source": "Original project generation in tools/create_blender_assets.py",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 10160,
+      "sha256": "9e1acdd52026538e05dcac1192b90e600412acd4fdb0d994587496b6c5d68e91",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "goku",
+      "path": "assets/models/goku.glb",
+      "source": "Original project generation in tools/create_blender_assets.py",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 286792,
+      "sha256": "cc13225f267b7dc10122772e03b279a53e7748ff3c72d05fa0c80ce85ee78246",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "vegeta",
+      "path": "assets/models/vegeta.glb",
+      "source": "Original project generation in tools/create_blender_assets.py",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 293820,
+      "sha256": "52ac7fd79a166a1883e26beefb38627468efea8d07ed55d5fd4fd7a5b154b702",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "aura",
+      "path": "assets/shaders/aura.gdshader",
+      "source": "Original project shader or vector art",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 657,
+      "sha256": "951e72c3e4e2b54e1d087316c2aec4e4e7395ea20626f9709b10aed9829d38ea",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "aura.gdshader",
+      "path": "assets/shaders/aura.gdshader.uid",
+      "source": "Original project shader or vector art",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 19,
+      "sha256": "e0f3cc30cf3da0c7ffc8c761a8ca431e77249762ca07d4976fd84c7217ae40e3",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "energy",
+      "path": "assets/vfx/energy.svg",
+      "source": "Original project shader or vector art",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 306,
+      "sha256": "5e8aa70f49c6c283a282055f1f5e97415573c4a98015898d4e6811769db86847",
+      "usage": "Runtime character/animation, environment or energy effect"
     }
   ],
   "total_audio_bytes": 189054,
-  "generated_by": "CodeRabbit Agent; generated manifest of original project assets"
+  "generated_by": "CodeRabbit Agent; generated manifest of original project assets",
+  "toolchain": {
+    "Blender Python API": "bpy 5.2.3, GPL; authoring tool only, not bundled in APK",
+    "Godot": "4.7.2, MIT"
+  }
 }

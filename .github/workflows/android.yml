@@ -50,14 +50,15 @@ jobs:
         run: |
           Godot_v4.7.2-stable_linux.x86_64 --headless --editor --import --quit
           Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/combat_test.gd
+          Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/menu_input_test.gd
       - name: Export development APK
         run: |
           mkdir -p build/android
           Godot_v4.7.2-stable_linux.x86_64 --headless --path . --export-debug 'Android ARM64'
-          python3 tools/verify_apk.py build/android/ultimate-warriors-0.1.0-arm64.apk
-          "$ANDROID_HOME/build-tools/35.0.1/apksigner" verify --verbose build/android/ultimate-warriors-0.1.0-arm64.apk
-          "$ANDROID_HOME/build-tools/35.0.1/zipalign" -c -P 16 4 build/android/ultimate-warriors-0.1.0-arm64.apk
-          cd build/android && sha256sum ultimate-warriors-0.1.0-arm64.apk > SHA256SUMS
+          python3 tools/verify_apk.py build/android/ultimate-warriors-0.2.0-arm64.apk
+          "$ANDROID_HOME/build-tools/35.0.1/apksigner" verify --verbose build/android/ultimate-warriors-0.2.0-arm64.apk
+          "$ANDROID_HOME/build-tools/35.0.1/zipalign" -c -P 16 4 build/android/ultimate-warriors-0.2.0-arm64.apk
+          cd build/android && sha256sum ultimate-warriors-0.2.0-arm64.apk > SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
           name: ultimate-warriors-arm64-development

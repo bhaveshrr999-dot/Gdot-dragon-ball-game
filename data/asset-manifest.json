@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "generated_assets_note": "Original Blender-authored skinned GLB meshes and animation clips, procedural Godot environments/VFX, and original synthetic audio. Development art; not official models. No downloaded franchise assets. No asset-size padding. Asset licenses cover original contributions only.",
+  "files": [
+    {
+      "name": "beam",
+      "path": "assets/audio/beam.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 52964,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "af71be755157b1ba5c7e7af6d06b2e7ffcea8e9acb76ea6231f37b3eb9058b48"
+    },
+    {
+      "name": "blast",
+      "path": "assets/audio/blast.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 10628,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "80fbc853f2cca9cf26af8f08ce855ba62d92effb6876e76711e8d759a1db6457"
+    },
+    {
+      "name": "dash",
+      "path": "assets/audio/dash.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 8864,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "5e14d0b2607c2109bd495110f447f8536b6484e62b6439327a2e79e7fe8ca44d"
+    },
+    {
+      "name": "explosion",
+      "path": "assets/audio/explosion.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 44144,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "f3f2c706866e18978fdbd278d2f3c98d9100846aea2c9dad1817c864868ded33"
+    },
+    {
+      "name": "hit",
+      "path": "assets/audio/hit.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 7100,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "791a504b47d5507e5e64abdb1d1128b85b910a37553b8a8c90742a98cc2df4a2"
+    },
+    {
+      "name": "menu",
+      "path": "assets/audio/menu.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 3572,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "880e188b2e84a112d814720d3e74654129d54a93992f2f4ad12d8ab1d246c498"
+    },
+    {
+      "name": "transform",
+      "path": "assets/audio/transform.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 61782,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "2824e55488c89b3006dce9edfa7427a883b4c74ff54bf7c71bc2c52ab7bb3e9b"
+    },
+    {
+      "name": "fighter",
+      "path": "scripts/fighter.gd",
+      "source": "Original project code",
+      "license": "MIT (code); character designs belong to their respective rights holders",
+      "bytes": 22557,
+      "usage": "Original geometric Goku/Vegeta stand-ins, generated at runtime; placeholder models, not commercial game assets",
+      "sha256": "e55432283bc80c244ddccf460e8c346ca1c4fda19af9ff6c6fbb7017ccdaf5f4"
+    },
+    {
+      "name": "arena",
+      "path": "scripts/arena.gd",
+      "source": "Original project code",
+      "license": "MIT (code); character designs belong to their respective rights holders",
+      "bytes": 3098,
+      "usage": "Original arena geometry; generated at runtime",
+      "sha256": "406780171ebe14813407a593f768eb9dbc419beb168e451e429187aa40b8cf3e"
+    },
+    {
+      "name": "art",
+      "path": "scripts/art.gd",
+      "source": "Original project code",
+      "license": "MIT (code); character designs belong to their respective rights holders",
+      "bytes": 1729,
+      "usage": "Original procedural VFX and shape geometry",
+      "sha256": "b1401ed89da1b4e9a7928609dc0c6c092ad2ae533fc496d0baddcdaaf2b0936b"
+    },
+    {
+      "name": "Application icon",
+      "path": "assets/icon.svg",
+      "source": "Original vector artwork for this project",
+      "license": "MIT",
+      "bytes": 352,
+      "usage": "Application icon",
+      "sha256": "3af04c43d2f47c48d100c8f4104c5bebd505f213c001212445aae3ebe7b4a4e9"
+    },
+    {
+      "name": "wasteland_rock",
+      "path": "assets/models/wasteland_rock.glb",
+      "source": "Original project generation in tools/create_blender_assets.py",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 10160,
+      "sha256": "9e1acdd52026538e05dcac1192b90e600412acd4fdb0d994587496b6c5d68e91",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "goku",
+      "path": "assets/models/goku.glb",
+      "source": "Original project generation in tools/create_blender_assets.py",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 800880,
+      "sha256": "5340af90868e8eb50cf08851ad36a070d410d98bd6db4ca1cae4c5588e6869af",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "vegeta",
+      "path": "assets/models/vegeta.glb",
+      "source": "Original project generation in tools/create_blender_assets.py",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 742808,
+      "sha256": "b60e15206412bf002b33fbe6ab4771388d626cd8d590b93091091757b101eac5",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "aura",
+      "path": "assets/shaders/aura.gdshader",
+      "source": "Original project shader or vector art",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 665,
+      "sha256": "eae469a5d80ec25e9e0ed06bceb3467700e64e059a660e27e3b766a857316226",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "aura.gdshader",
+      "path": "assets/shaders/aura.gdshader.uid",
+      "source": "Original project shader or vector art",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 19,
+      "sha256": "e0f3cc30cf3da0c7ffc8c761a8ca431e77249762ca07d4976fd84c7217ae40e3",
+      "usage": "Runtime character/animation, environment or energy effect"
+    },
+    {
+      "name": "energy",
+      "path": "assets/vfx/energy.svg",
+      "source": "Original project shader or vector art",
+      "license": "MIT for original implementation; franchise rights excluded",
+      "bytes": 306,
+      "sha256": "5e8aa70f49c6c283a282055f1f5e97415573c4a98015898d4e6811769db86847",
+      "usage": "Runtime character/animation, environment or energy effect"
+    }
+  ],
+  "total_audio_bytes": 189054,
+  "generated_by": "CodeRabbit Agent; generated manifest of original project assets",
+  "toolchain": {
+    "Blender Python API": "bpy 5.2.3, GPL; authoring tool only, not bundled in APK",
+    "Godot": "4.7.2, MIT"
+  },
+  "total_file_bytes": 1771628
+}

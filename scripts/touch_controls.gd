@@ -3,6 +3,10 @@ extends Control
 
 signal action_pressed(action)
 signal action_released(action)
+var cooldown_fraction: float = 0
+var available_ki: float = 100
+var form_tint := Color.WHITE
+var pulse: float = 0
 var movement := Vector2.ZERO
 var fingers: Dictionary = {}
 var stick_finger: int = -1
@@ -16,6 +20,11 @@ var titles := {"medium":"MEDIUM", "guard":"GUARD", "dash":"VANISH", "light":"PUN
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+func _process(delta: float) -> void:
+	if not is_visible_in_tree(): return
+	pulse += delta
+	if not fingers.is_empty(): queue_redraw()
 
 func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree() or (not input_enabled and not edit_layout):
@@ -71,6 +80,11 @@ func _draw() -> void:
 		var center: Vector2 = actions[action]
 		var pressed: bool = fingers.values().has(action)
 		var tint := Color("ffd16b") if action in ["special", "ultimate", "transform"] else Color("a4d2ef")
+		if action == "transform": tint = form_tint
+		if pressed:
+			draw_arc(center, 39 + sin(pulse * 12) * 2, 0, TAU, 32, Color(tint, 0.5), 2, true)
+		if cooldown_fraction > 0 and action in ["light", "medium", "heavy", "special", "ultimate"]:
+			draw_arc(center, 37, -PI / 2, -PI / 2 + TAU * cooldown_fraction, 32, Color(tint, 0.7), 3, true)
 		draw_circle(center, 33, Color(tint, 0.55) if pressed else Color(0.025, 0.06, 0.12, 0.72))
 		draw_arc(center, 33, 0, TAU, 32, Color(tint, 0.7), 1.5, true)
 		var text_size := ThemeDB.fallback_font.get_string_size(titles[action], HORIZONTAL_ALIGNMENT_LEFT, -1, 12)

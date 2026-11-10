@@ -1,6 +1,14 @@
 <!-- coderabbit-ai-generated:v1 -->
 
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:8d67aa839681281dff0c83155d763c3d38493b9c0eae75eafb5ea9b984c975a4 -->
+
 # 0.2 development update
+
+Historical snapshot. Current changes and balance are in [UPDATE_0_3.md](UPDATE_0_3.md).
+
+<!-- /coderabbit-ai-generated:v1 -->
 
 ## Implemented and exercised
 

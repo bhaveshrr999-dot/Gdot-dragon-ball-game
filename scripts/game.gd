@@ -22,6 +22,13 @@ var timer_label: Label
 var message_label: Label
 var combo_label: Label
 var form_label: Label
+var form_effect_label: Label
+var rival_form_label: Label
+var preview_stats: Label
+var stamina_player: ProgressBar
+var hp_trail_player: ProgressBar
+var hp_trail_enemy: ProgressBar
+var cost_form: int = -1
 var warrior_select: OptionButton
 var form_select: OptionButton
 var arena_select: OptionButton
@@ -148,8 +155,24 @@ func button(parent: Node, title: String, pos: Vector2, dimensions: Vector2, call
 	node.position = pos
 	node.size = dimensions
 	node.pressed.connect(callback)
+	node.mouse_entered.connect(func(): animate_button(node, Color(1.18, 1.18, 1.18)))
+	node.mouse_exited.connect(func(): animate_button(node, Color.WHITE))
+	node.button_down.connect(func(): animate_button(node, Color(0.7, 0.85, 1.0)))
+	node.button_up.connect(func(): animate_button(node, Color.WHITE))
 	parent.add_child(node)
 	return node
+
+func animate_button(node: Control, tint: Color) -> void:
+	if node.has_meta("feedback") and node.get_meta("feedback").is_valid():
+		node.get_meta("feedback").kill()
+	var tween := node.create_tween()
+	tween.tween_property(node, "modulate", tint, 0.12)
+	node.set_meta("feedback", tween)
+
+func reveal(node: Control) -> void:
+	node.modulate.a = 0
+	var tween := node.create_tween()
+	tween.tween_property(node, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_SINE)
 
 func panel(parent: Node, pos: Vector2, dimensions: Vector2, color: Color) -> ColorRect:
 	if parent == overlay:
@@ -182,13 +205,13 @@ func set_selector_open(value: bool) -> void:
 	held.clear()
 	input_buffer.clear()
 	for fighter in [player, enemy]:
-		fighter.set_physics_process(not paused and not value)
+		fighter.set_combat_paused(paused or value)
 	touch.input_enabled = not paused and not value
 
 func build_menu() -> void:
 	panel(menu, Vector2.ZERO, Vector2(630, 720), Color(0.025, 0.045, 0.085, 0.94))
 	panel(menu, Vector2(42, 54), Vector2(48, 3), GOLD)
-	label(menu, "FAN-MADE  /  EARLY ACCESS 0.2", Vector2(103, 40), 15, GOLD)
+	label(menu, "FAN-MADE  /  EARLY ACCESS 0.3", Vector2(103, 40), 15, GOLD)
 	label(menu, "DRAGON BALL", Vector2(40, 75), 51)
 	label(menu, "ULTIMATE\nWARRIORS", Vector2(39, 129), 58, GOLD)
 	label(menu, "BREAK YOUR LIMITS", Vector2(44, 278), 19, Color("a6c5dc"))
@@ -202,7 +225,8 @@ func build_menu() -> void:
 			form_select.add_item(form)
 		player.warrior = index
 		player.form_index = 0
-		player.build_model())
+		player.build_model()
+		update_preview())
 	label(menu, "BATTLE MODE", Vector2(44, 408), 13, GOLD)
 	label(menu, "ARENA", Vector2(322, 408), 13, GOLD)
 	mode_select = option(menu, Roster.MODES, Vector2(44, 433))
@@ -214,19 +238,30 @@ func build_menu() -> void:
 	start.add_theme_color_override("font_color", GOLD)
 	label(menu, "Original skinned characters · development art", Vector2(44, 635), 13, Color("9bb0c4"))
 	label(menu, "Offline play  •  Touch + keyboard  •  No account required", Vector2(44, 660), 13, Color("9bb0c4"))
-	label(menu, "GOKU  ×  VEGETA", Vector2(822, 593), 27, GOLD)
-	label(menu, "A rivalry beyond limits.", Vector2(841, 635), 18)
+	panel(menu, Vector2(670, 515), Vector2(565, 178), Color(0.025, 0.045, 0.085, 0.88))
+	preview_stats = label(menu, "", Vector2(694, 535), 18, GOLD)
+	form_select.item_selected.connect(func(_index: int): update_preview())
+
+func update_preview() -> void:
+	if not is_instance_valid(player): return
+	player.form_index = form_select.selected
+	player.refresh_form()
+	var form := Roster.form(player.warrior, player.form_index)
+	preview_stats.text = "%s · %s\n%s\nPOWER ×%.2f   SPEED ×%.2f   KI DRAIN %.1f/s\n%s" % ["GOKU" if player.warrior == 0 else "VEGETA", form.name, form.description, form.power, form.speed, form.drain, form.continuity]
+	preview_stats.add_theme_color_override("font_color", form.aura)
+	reveal(preview_stats)
 
 func bar(parent: Node, pos: Vector2, width: float, tint: Color) -> ProgressBar:
 	var node := ProgressBar.new()
 	node.position = pos
 	node.size = Vector2(width, 16)
 	node.show_percentage = false
+	node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = tint
 	fill.set_corner_radius_all(3)
 	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color("152133")
+	bg.bg_color = Color(0.04,0.07,0.12,0.35)
 	node.add_theme_stylebox_override("fill", fill)
 	node.add_theme_stylebox_override("background", bg)
 	parent.add_child(node)
@@ -236,12 +271,18 @@ func build_hud() -> void:
 	panel(hud, Vector2.ZERO, Vector2(1280, 155), Color(0.025, 0.04, 0.075, 0.78))
 	label(hud, "PLAYER 01", Vector2(30, 14), 16, GOLD)
 	label(hud, "RIVAL", Vector2(926, 14), 16, GOLD)
+	hp_trail_player = bar(hud, Vector2(30, 45), 390, Color("ffd074"))
+	hp_trail_enemy = bar(hud, Vector2(860, 45), 390, Color("ffd074"))
 	hp_player = bar(hud, Vector2(30, 45), 390, Color("62d7ab"))
 	hp_enemy = bar(hud, Vector2(860, 45), 390, Color("f28b75"))
 	ki_player = bar(hud, Vector2(30, 70), 330, Color("69bfff"))
 	ki_enemy = bar(hud, Vector2(920, 70), 330, Color("69bfff"))
+	stamina_player = bar(hud, Vector2(30, 91), 230, Color("dfca7e"))
+	stamina_player.size.y = 4
+	form_effect_label = label(hud, "", Vector2(30, 159), 14, Color("b7d8ec"))
+	rival_form_label = label(hud, "", Vector2(860, 159), 14, Color("f28b75"))
 	timer_label = label(hud, "180", Vector2(599, 18), 37)
-	form_label = label(hud, "", Vector2(30, 98), 15, GOLD)
+	form_label = label(hud, "", Vector2(30, 107), 13, GOLD)
 	combo_label = label(hud, "", Vector2(30, 185), 28, GOLD)
 	message_label = label(hud, "", Vector2(345, 205), 26, GOLD)
 	button(hud, "RESET", Vector2(990, 102), Vector2(100, 42), training_reset)
@@ -290,6 +331,7 @@ func spawn_fighters(character: int, form: int) -> void:
 	for fighter in [player, enemy]:
 		fighter.struck.connect(on_strike)
 		fighter.launched.connect(launch_attack)
+		fighter.landed.connect(on_landing)
 		fighter.transformed.connect(on_transform)
 
 func show_menu() -> void:
@@ -309,12 +351,15 @@ func show_menu() -> void:
 	enemy.rotation.y = PI
 	menu.visible = true
 	hud.visible = false
+	update_preview()
+	reveal(menu)
 
 func start_match() -> void:
 	sound.play("menu")
 	mode = mode_select.selected
 	difficulty = difficulty_select.selected
 	wave = 1
+	cost_form = -1
 	clear_overlay()
 	clear_world()
 	arena = BattleArena.new()
@@ -327,6 +372,9 @@ func start_match() -> void:
 	paused = false
 	menu.visible = false
 	hud.visible = true
+	hp_trail_player.value = 100
+	hp_trail_enemy.value = 100
+	reveal(hud)
 	touch.visible = settings.touch
 	battle_form.clear()
 	battle_attack.clear()
@@ -334,7 +382,7 @@ func start_match() -> void:
 		battle_form.add_item(form)
 	battle_form.select(player.form_index)
 	for attack in Roster.attacks(player.warrior):
-		battle_attack.add_item(attack.title + "  [" + str(int(attack.cost)) + " ki]")
+		battle_attack.add_item(attack.title + "  [" + str(int(ceil(player.special_cost(attack)))) + " ki]")
 	time_left = 90 if mode == 4 else 180
 	elapsed = 0
 	ai_clock = 1.5
@@ -371,7 +419,7 @@ func _process(delta: float) -> void:
 		if mode != 5:
 			process_ai(delta)
 	update_camera(delta)
-	update_hud()
+	update_hud(delta)
 	if mode in [1, 9]:
 		if mode == 9 and player.combo >= 3:
 			end_match("TRIAL COMPLETE", "Three-hit chain connected. Try a launch into a beam next.")
@@ -412,7 +460,7 @@ func process_controls(delta: float) -> void:
 		entry.ttl -= delta
 		if entry.ttl <= 0:
 			input_buffer.erase(entry)
-		elif player.can_act():
+		elif player.can_act() or (entry.action == "special" and player.can_cancel_special()):
 			execute_action(entry.action)
 			input_buffer.erase(entry)
 			break
@@ -450,7 +498,7 @@ func press_action(action: String) -> void:
 		return
 	if action in ["guard", "charge", "up", "down"]:
 		return
-	if player.can_act() or action == "dash":
+	if player.can_act() or action == "dash" or (action == "special" and player.can_cancel_special()):
 		execute_action(action)
 	else:
 		if input_buffer.size() < 2:
@@ -468,8 +516,8 @@ func execute_action(action: String) -> void:
 		"blast": player.special(AttackDefinition.make("Ki blast", 5, 5, "blast", Color("ffd977"), 0.08))
 		"special":
 			var attack: AttackDefinition = Roster.attacks(player.warrior)[battle_attack.selected]
-			if not player.special(attack):
-				notify("Needs " + str(int(attack.cost)) + " ki / form " + str(attack.minimum_form), 1.2)
+			if not player.special(attack, true):
+				notify("Needs " + str(int(ceil(player.special_cost(attack)))) + " ki / form " + str(attack.minimum_form), 1.2)
 		"ultimate":
 			var attack: AttackDefinition = Roster.attacks(player.warrior)[4 if player.warrior == 0 else 3]
 			if not player.special(attack):
@@ -479,7 +527,8 @@ func execute_action(action: String) -> void:
 			if selected == player.form_index:
 				selected = (selected + 1) % Roster.forms(player.warrior).size()
 				battle_form.select(selected)
-			player.transform(selected)
+			if not player.transform(selected):
+				notify("Transformation needs %d Ki and a clear recovery" % int(player.transformation_cost(selected)), 1.5)
 		"dash":
 			if player.vanish():
 				sound.play("dash")
@@ -528,8 +577,10 @@ func launch_attack(actor: Fighter, attack: AttackDefinition) -> void:
 	if attack.kind in ["teleport", "warp", "rush"]:
 		actor.position = target.position + target.basis.z * 2.6
 		burst(actor.position + Vector3.UP, attack.color, 2)
-		if attack.kind in ["rush", "teleport"]:
-			var perfect := target.take_hit(attack.damage * Roster.form(actor.warrior, actor.form_index).power, Vector3.UP * 6 + direction * 18)
+		if attack.kind == "teleport":
+			return
+		if attack.kind == "rush":
+			var perfect := target.take_hit(attack.damage * actor.attack_power(), Vector3.UP * 6 + direction * 18)
 			on_strike(target, attack.damage, perfect)
 			arena.damage_environment(target.position, 5)
 			return
@@ -555,8 +606,8 @@ func launch_attack(actor: Fighter, attack: AttackDefinition) -> void:
 	var trail := EnergyFX.particles(visual, attack.color, radius * 0.5, 16 if attack.kind == "blast" else 32)
 	trail.direction = -direction
 	trail.gravity = Vector3.ZERO
-	projectiles.append({"node": visual, "actor": actor, "target": target, "attack": attack, "direction": direction, "ttl": 4.0, "radius": radius})
-	sound.play("blast" if attack.kind == "blast" else "beam")
+	projectiles.append({"node": visual, "actor": actor, "target": target, "attack": attack, "direction": direction, "ttl": 4.0, "radius": radius, "power": actor.attack_power()})
+	sound.play_at("blast" if attack.kind == "blast" else "beam", actor.global_position)
 	if attack.damage > 30:
 		notify(attack.title.to_upper(), 1.3)
 		shake = 0.15
@@ -574,7 +625,7 @@ func update_projectiles(delta: float) -> void:
 		var segment := node.position - previous
 		var fraction := clampf((hit_point - previous).dot(segment) / maxf(segment.length_squared(), 0.0001), 0, 1)
 		if (previous + segment * fraction).distance_to(hit_point) < shot.radius + 1.0:
-			var damage: float = shot.attack.damage * Roster.form(shot.actor.warrior, shot.actor.form_index).power
+			var damage: float = shot.attack.damage * shot.power
 			var before: float = shot.target.health
 			var perfect: bool = shot.target.take_hit(damage, shot.direction * 15)
 			on_strike(shot.target, before - shot.target.health, perfect)
@@ -641,7 +692,7 @@ func update_clash(delta: float) -> void:
 
 func on_strike(target: Fighter, amount: float, perfect: bool) -> void:
 	burst(target.position + Vector3.UP * 1.6, Color("9beaff") if perfect else GOLD, 1.1)
-	sound.play("dash" if perfect else "hit")
+	sound.play_at("dash" if perfect else "hit", target.global_position + Vector3.UP, 1.1 if perfect else 1.0)
 	shake = 0.07 if perfect else 0.18
 	var text := Label3D.new()
 	text.text = "EVADE / PERFECT" if perfect else str(int(amount))
@@ -653,11 +704,20 @@ func on_strike(target: Fighter, amount: float, perfect: bool) -> void:
 	world.add_child(text)
 	effects.append({"node": text, "ttl": 0.7, "life": 0.7, "float": true})
 
+func on_landing(actor: Fighter, speed: float) -> void:
+	if speed < 4: return
+	burst(actor.position + Vector3.UP * 0.15, Color("b7a185"), minf(2.5, speed * 0.18))
+	arena.damage_environment(actor.position, minf(3, speed * 0.2))
+	shake = maxf(shake, 0.1)
+	sound.play_at("hit", actor.global_position, 0.8)
+
 func on_transform(actor: Fighter) -> void:
 	var form := Roster.form(actor.warrior, actor.form_index)
+	if actor == player:
+		battle_form.select(player.form_index)
 	burst(actor.position + Vector3.UP, form.aura, 4)
 	shake = 0.4
-	sound.play("transform")
+	sound.play_at("transform", actor.global_position, 0.9 + actor.form_index * 0.025)
 	notify(form.name.to_upper() + "  ·  " + form.continuity, 2.0)
 
 func burst(point: Vector3, tint: Color, radius: float) -> void:
@@ -701,22 +761,56 @@ func update_camera(delta: float) -> void:
 	camera.position.y = maxf(2, camera.position.y)
 	camera.look_at(focus, Vector3.UP)
 
-func update_hud() -> void:
+func update_hud(delta: float = 0.016) -> void:
 	hp_player.value = player.health / 2
 	hp_enemy.value = enemy.health / 2
 	ki_player.value = player.ki
 	ki_enemy.value = enemy.ki
+	stamina_player.value = player.stamina
+	hp_trail_player.value = move_toward(hp_trail_player.value, hp_player.value, delta * 22)
+	hp_trail_enemy.value = move_toward(hp_trail_enemy.value, hp_enemy.value, delta * 22)
+	if cost_form != player.form_index:
+		cost_form = player.form_index
+		var attacks := Roster.attacks(player.warrior)
+		for index in battle_attack.item_count:
+			var attack: AttackDefinition = attacks[index]
+			battle_attack.set_item_text(index, "%s [%d ki]" % [attack.title, int(ceil(player.special_cost(attack)))])
+	var form := Roster.form(player.warrior, player.form_index)
+	form_effect_label.text = form.description + (" · FURY +%d%%" % int(player.fury * 100) if form.name == "Ultra Ego" else "")
+	form_effect_label.add_theme_color_override("font_color", form.aura)
+	rival_form_label.text = Roster.forms(enemy.warrior)[enemy.form_index]
+	touch.cooldown_fraction = clampf(player.cooldown / maxf(player.action_duration, 0.01), 0, 1)
+	touch.available_ki = player.ki
+	touch.form_tint = form.aura
+	touch.queue_redraw()
 	timer_label.text = "%03d" % maxi(0, int(time_left))
-	form_label.text = ("GOKU" if player.warrior == 0 else "VEGETA") + "  /  " + Roster.forms(player.warrior)[player.form_index] + "    HP %d  KI %d" % [int(player.health), int(player.ki)]
+	form_label.text = ("GOKU" if player.warrior == 0 else "VEGETA") + "  /  " + Roster.forms(player.warrior)[player.form_index] + "\nHP %d  KI %d  ST %d" % [int(player.health), int(player.ki), int(player.stamina)]
 	combo_label.text = "%d HIT COMBO" % player.combo if player.combo > 1 else ""
 
 func notify(text: String, duration: float) -> void:
 	message_label.text = text
 	message_time = duration
+	reveal(message_label)
 
 func next_wave() -> void:
 	wave += 1
 	enemy.health = 200
+	enemy.melee_pending.clear()
+	enemy.pending = null
+	enemy.cooldown = 0
+	enemy.stunned = 0
+	enemy.invincible = 0
+	enemy.transform_time = 0
+	enemy.attack_animation_time = 0
+	enemy.landing_time = 0
+	enemy.combo = 0
+	enemy.stamina = 100
+	enemy.guarding = false
+	enemy.charging = false
+	enemy.motion = Vector3.ZERO
+	for shot in projectiles.duplicate(): remove_shot(shot)
+	enemy.knocked_airborne = false
+	enemy.fury = 0
 	enemy.ki = 100
 	enemy.form_index = mini(wave + difficulty, Roster.forms(enemy.warrior).size() - 1)
 	enemy.refresh_form()
@@ -741,6 +835,8 @@ func end_match(title: String, subtitle: String) -> void:
 	running = false
 	player.active = false
 	enemy.active = false
+	player.play_rig("victory" if player.health > enemy.health else "defeat", true)
+	enemy.play_rig("victory" if enemy.health > player.health else "defeat", true)
 	touch.reset_input()
 	held.clear()
 	input_buffer.clear()
@@ -757,10 +853,11 @@ func toggle_pause() -> void:
 		return
 	paused = not paused
 	for fighter in [player, enemy]:
-		fighter.set_physics_process(not paused)
+		fighter.set_combat_paused(paused)
 	clear_overlay()
 	touch.reset_input()
 	held.clear()
+	input_buffer.clear()
 	if paused:
 		panel(overlay, Vector2(380, 170), Vector2(520, 380), Color(0.025, 0.04, 0.08, 0.97))
 		label(overlay, "PAUSED", Vector2(460, 203), 42, GOLD)
@@ -810,6 +907,9 @@ func customize_controls() -> void:
 	clear_overlay()
 	touch.visible = true
 	hud.visible = true
+	hp_trail_player.value = 100
+	hp_trail_enemy.value = 100
+	reveal(hud)
 	touch.edit_layout = true
 	label(overlay, "Drag buttons with touch, then save. Joystick stays on the left.", Vector2(330, 200), 19, GOLD)
 	button(overlay, "SAVE LAYOUT", Vector2(500, 250), Vector2(260, 52), func():
@@ -910,6 +1010,12 @@ func training_reset() -> void:
 		fighter.ki = 100
 		fighter.stamina = 100
 		fighter.pending = null
+		fighter.melee_pending.clear()
+		fighter.knocked_airborne = false
+		fighter.landing_time = 0
+		fighter.attack_animation_time = 0
+		fighter.fury = 0
+		fighter.transform_time = 0
 		fighter.combo = 0
 		fighter.stunned = 0
 		fighter.cooldown = 0
@@ -918,4 +1024,7 @@ func training_reset() -> void:
 	enemy.position = Vector3(0, 0, -1)
 	for shot in projectiles.duplicate():
 		remove_shot(shot)
+	touch.reset_input()
+	held.clear()
+	input_buffer.clear()
 	notify("Training reset · chain punch, medium, kick", 2)

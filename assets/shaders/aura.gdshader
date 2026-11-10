@@ -10,6 +10,6 @@ void fragment() {
  float rim = pow(1.0 - abs(dot(normalize(NORMAL), normalize(VIEW))), 2.0);
  float turbulence = 0.6 + 0.4 * sin(UV.x * 36.0 + sin(UV.y * 18.0 - TIME * 6.0) * 2.0 + TIME * 3.0);
  ALBEDO = energy_color.rgb;
- EMISSION = energy_color.rgb * (0.8 + turbulence) * intensity;
- ALPHA = clamp(rim * turbulence * 0.55 * intensity, 0.0, 0.65);
+ EMISSION = energy_color.rgb * (0.35 + turbulence * 0.45) * intensity;
+ ALPHA = clamp(rim * turbulence * 0.35 * intensity, 0.0, 0.45);
 }

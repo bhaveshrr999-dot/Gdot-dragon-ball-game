@@ -2,7 +2,17 @@
 
 # Build and play Ultimate Warriors
 
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:7f59d564839720366bd1baedbc395b7f22dd4358c40631df154774c52c2b4d3f -->
+
+## Current version
+
+v0.3.0 uses versionCode3 and the same signing key as prior GitHub prereleases. Install the release APK over the older release to preserve settings. J/H/K are light/medium/heavy strikes. Asset regeneration is optional: use Python3.13 with `bpy==5.2.3`, then run `python tools/create_blender_assets.py` and reimport in Godot.
+
 ## Toolchain
+
+<!-- /coderabbit-ai-generated:v1 -->
 
 - [Godot 4.7.2 stable](https://godotengine.org/download/archive/4.7.2-stable/) with exactly matching standard export templates. The latest stable release was checked against the official archive at development time.
 - OpenJDK 17 (local build used Temurin 17.0.21+9).

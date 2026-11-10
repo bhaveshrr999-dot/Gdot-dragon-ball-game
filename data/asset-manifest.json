@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_assets_note": "Runtime meshes have no separate model file. Source bytes do not represent mesh memory. All seven audio files are original synthetic effects; no voice recordings or franchise music. No rights to the Dragon Ball franchise are granted by the code/audio licenses.",
+  "generated_assets_note": "Original Blender-authored skinned GLB meshes and animation clips, procedural Godot environments/VFX, and original synthetic audio. Development art; not official models. No downloaded franchise assets. No asset-size padding. Asset licenses cover original contributions only.",
   "files": [
     {
       "name": "beam",
@@ -70,9 +70,9 @@
       "path": "scripts/fighter.gd",
       "source": "Original project code",
       "license": "MIT (code); character designs belong to their respective rights holders",
-      "bytes": 13499,
+      "bytes": 22557,
       "usage": "Original geometric Goku/Vegeta stand-ins, generated at runtime; placeholder models, not commercial game assets",
-      "sha256": "715d10025c3eaae082a5a78a30afe01a8c264086c0a8fe8d3ac4a4111159f684"
+      "sha256": "e55432283bc80c244ddccf460e8c346ca1c4fda19af9ff6c6fbb7017ccdaf5f4"
     },
     {
       "name": "arena",
@@ -115,8 +115,8 @@
       "path": "assets/models/goku.glb",
       "source": "Original project generation in tools/create_blender_assets.py",
       "license": "MIT for original implementation; franchise rights excluded",
-      "bytes": 286792,
-      "sha256": "cc13225f267b7dc10122772e03b279a53e7748ff3c72d05fa0c80ce85ee78246",
+      "bytes": 800880,
+      "sha256": "5340af90868e8eb50cf08851ad36a070d410d98bd6db4ca1cae4c5588e6869af",
       "usage": "Runtime character/animation, environment or energy effect"
     },
     {
@@ -124,8 +124,8 @@
       "path": "assets/models/vegeta.glb",
       "source": "Original project generation in tools/create_blender_assets.py",
       "license": "MIT for original implementation; franchise rights excluded",
-      "bytes": 293820,
-      "sha256": "52ac7fd79a166a1883e26beefb38627468efea8d07ed55d5fd4fd7a5b154b702",
+      "bytes": 742808,
+      "sha256": "b60e15206412bf002b33fbe6ab4771388d626cd8d590b93091091757b101eac5",
       "usage": "Runtime character/animation, environment or energy effect"
     },
     {
@@ -133,8 +133,8 @@
       "path": "assets/shaders/aura.gdshader",
       "source": "Original project shader or vector art",
       "license": "MIT for original implementation; franchise rights excluded",
-      "bytes": 657,
-      "sha256": "951e72c3e4e2b54e1d087316c2aec4e4e7395ea20626f9709b10aed9829d38ea",
+      "bytes": 665,
+      "sha256": "eae469a5d80ec25e9e0ed06bceb3467700e64e059a660e27e3b766a857316226",
       "usage": "Runtime character/animation, environment or energy effect"
     },
     {
@@ -161,5 +161,6 @@
   "toolchain": {
     "Blender Python API": "bpy 5.2.3, GPL; authoring tool only, not bundled in APK",
     "Godot": "4.7.2, MIT"
-  }
+  },
+  "total_file_bytes": 1771628
 }

@@ -20,6 +20,7 @@ func reset_actor(actor: Fighter) -> void:
 	actor.stunned = 0
 	actor.transform_time = 0
 	actor.pending = null
+	actor.melee_pending.clear()
 	actor.ki = 100
 	actor.invincible = 0
 	actor.guarding = false
@@ -68,11 +69,14 @@ func run() -> void:
 	player.position = Vector3.ZERO
 	enemy.position = Vector3(0, 0, -2)
 	check(player.melee(), "melee input accepted")
-	check(enemy.health < 200, "melee damages target")
+	check(enemy.health == 200, "melee does not damage before impact frame")
+	player._physics_process(0.13)
+	check(enemy.health < 200, "melee damages target at impact frame")
 	reset_actor(player)
 	reset_actor(enemy)
 	enemy.position = Vector3(0, 0, -15)
 	player.melee()
+	player._physics_process(0.13)
 	check(enemy.health == 200, "melee cannot hit out of range")
 	reset_actor(enemy)
 	enemy.guarding = true

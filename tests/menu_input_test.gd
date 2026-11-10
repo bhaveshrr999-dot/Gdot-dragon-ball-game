@@ -37,6 +37,9 @@ func run() -> void:
 	check(not game.selector_open and game.player.is_physics_processing(), "selector close resumes combat")
 	await tap(Vector2(1249, 122))
 	check(game.paused, "real touch activates pause")
+	var animation_position: float = game.player.rig_playback.get_current_play_position()
+	await create_timer(.1).timeout
+	check(is_equal_approx(game.player.rig_playback.get_current_play_position(), animation_position), "pause freezes animation alongside impact timing")
 	await tap(Vector2(600, 310))
 	check(not game.paused, "real touch activates resume")
 	game.show_menu()
@@ -71,6 +74,7 @@ func run() -> void:
 	game.player.cooldown = 0
 	game.enemy.position = game.player.position + Vector3(0, 0, -2)
 	game.player.medium_attack()
+	game.player._physics_process(0.17)
 	check(game.enemy.health == 192, "medium attack deals intermediate damage")
 	game.mode_select.select(9)
 	game.start_match()

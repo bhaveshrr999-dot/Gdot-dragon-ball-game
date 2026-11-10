@@ -32,10 +32,12 @@ jobs:
           rm Godot_v4.7.2-stable_linux.x86_64.zip Godot_v4.7.2-stable_export_templates.tpz sums.txt
       - name: Prepare Android command-line tools
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          packages: platform-tools platforms;android-36 build-tools;35.0.1
+          log-accepted-android-sdk-licenses: false
       - name: Install SDK and configure export
         shell: bash
         run: |
-          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;35.0.1'
           mkdir -p "$HOME/.config/godot" "$HOME/.android"
           keytool -genkeypair -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -dname 'CN=Android Debug' -keyalg RSA -validity 10000
           cat > "$HOME/.config/godot/editor_settings-4.7.tres" <<SETTINGS

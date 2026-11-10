@@ -30,6 +30,8 @@ jobs:
           mkdir -p "$HOME/.local/share/godot/export_templates/4.7.2.stable"
           unzip -j -q Godot_v4.7.2-stable_export_templates.tpz templates/android_debug.apk templates/android_release.apk -d "$HOME/.local/share/godot/export_templates/4.7.2.stable"
           rm Godot_v4.7.2-stable_linux.x86_64.zip Godot_v4.7.2-stable_export_templates.tpz sums.txt
+      - name: Prepare Android command-line tools
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
       - name: Install SDK and configure export
         shell: bash
         run: |

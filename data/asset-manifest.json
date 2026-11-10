@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "generated_assets_note": "Runtime meshes have no separate model file. Source bytes do not represent mesh memory. All seven audio files are original synthetic effects; no voice recordings or franchise music. No rights to the Dragon Ball franchise are granted by the code/audio licenses.",
+  "files": [
+    {
+      "name": "beam",
+      "path": "assets/audio/beam.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 52964,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "af71be755157b1ba5c7e7af6d06b2e7ffcea8e9acb76ea6231f37b3eb9058b48"
+    },
+    {
+      "name": "blast",
+      "path": "assets/audio/blast.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 10628,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "80fbc853f2cca9cf26af8f08ce855ba62d92effb6876e76711e8d759a1db6457"
+    },
+    {
+      "name": "dash",
+      "path": "assets/audio/dash.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 8864,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "5e14d0b2607c2109bd495110f447f8536b6484e62b6439327a2e79e7fe8ca44d"
+    },
+    {
+      "name": "explosion",
+      "path": "assets/audio/explosion.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 44144,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "f3f2c706866e18978fdbd278d2f3c98d9100846aea2c9dad1817c864868ded33"
+    },
+    {
+      "name": "hit",
+      "path": "assets/audio/hit.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 7100,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "791a504b47d5507e5e64abdb1d1128b85b910a37553b8a8c90742a98cc2df4a2"
+    },
+    {
+      "name": "menu",
+      "path": "assets/audio/menu.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 3572,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "880e188b2e84a112d814720d3e74654129d54a93992f2f4ad12d8ab1d246c498"
+    },
+    {
+      "name": "transform",
+      "path": "assets/audio/transform.wav",
+      "source": "Original procedural synthesis for this project",
+      "license": "CC0-1.0",
+      "bytes": 61782,
+      "usage": "combat, transformation, or interface sound",
+      "sha256": "2824e55488c89b3006dce9edfa7427a883b4c74ff54bf7c71bc2c52ab7bb3e9b"
+    },
+    {
+      "name": "fighter",
+      "path": "scripts/fighter.gd",
+      "source": "Original project code",
+      "license": "MIT (code); character designs belong to their respective rights holders",
+      "bytes": 9850,
+      "usage": "Original geometric Goku/Vegeta stand-ins, generated at runtime; placeholder models, not commercial game assets",
+      "sha256": "8b206711ace6642e19cfa977ef7faa555dc898f75643d7dddcab0998eee17031"
+    },
+    {
+      "name": "arena",
+      "path": "scripts/arena.gd",
+      "source": "Original project code",
+      "license": "MIT (code); character designs belong to their respective rights holders",
+      "bytes": 3046,
+      "usage": "Original arena geometry; generated at runtime",
+      "sha256": "7afc8d0c1c4760bbf9075ae3f4731f0d7f551c23a331e4f9cd3fe0e1b11932ef"
+    },
+    {
+      "name": "art",
+      "path": "scripts/art.gd",
+      "source": "Original project code",
+      "license": "MIT (code); character designs belong to their respective rights holders",
+      "bytes": 1729,
+      "usage": "Original procedural VFX and shape geometry",
+      "sha256": "b1401ed89da1b4e9a7928609dc0c6c092ad2ae533fc496d0baddcdaaf2b0936b"
+    },
+    {
+      "name": "Application icon",
+      "path": "assets/icon.svg",
+      "source": "Original vector artwork for this project",
+      "license": "MIT",
+      "bytes": 352,
+      "usage": "Application icon"
+    }
+  ],
+  "total_audio_bytes": 189054,
+  "generated_by": "CodeRabbit Agent; generated manifest of original project assets"
+}
